@@ -20,9 +20,10 @@ public class CartItemService {
         return cartItemRepository.findByCart(cart);
     }
 
-    public Optional<CartItem> getItemByCartAndProduct(Cart cart, Product product) {
+    public Optional<CartItem> getItemByCartAndProduct(Cart cart, Product product) { // ✅ FIXED
         return cartItemRepository.findByCartAndProduct(cart, product);
     }
+
 
     public CartItem saveCartItem(CartItem cartItem) {
         return cartItemRepository.save(cartItem);

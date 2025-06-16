@@ -1,86 +1,53 @@
 package com.example.halu_be.controllers;
 
-import com.example.halu_be.models.*;
-import com.example.halu_be.services.*;
+import com.example.halu_be.dtos.CartItemDTO;
+import com.example.halu_be.models.Product;
+import com.example.halu_be.models.User;
+import com.example.halu_be.services.CartService;
+import com.example.halu_be.services.ProductService;
+import com.example.halu_be.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/carts")
 @RequiredArgsConstructor
 public class CartController {
 
-    private final UserService userService;
     private final CartService cartService;
-    private final CartItemService cartItemService;
+    private final UserService userService;
     private final ProductService productService;
 
-    // Get all items in buyer's cart
     @GetMapping("/{buyerId}")
-    public List<CartItem> getCartItems(@PathVariable Long buyerId) {
+    public List<CartItemDTO> getCartItems(@PathVariable Long buyerId) {
         Optional<User> buyer = userService.getUserById(buyerId);
         if (buyer.isEmpty()) return Collections.emptyList();
-
-        Cart cart = cartService.getCartByBuyer(buyer.get()).orElseGet(() -> {
-            Cart newCart = new Cart();
-            newCart.setBuyer(buyer.get());
-            return cartService.saveCart(newCart);
-        });
-
-        return cartItemService.getItemsByCart(cart);
+        return cartService.getCartItemDTOsByBuyer(buyer.get());
     }
 
-    // Add product to cart (or increment quantity)
     @PostMapping("/{buyerId}/add/{productId}")
-    public CartItem addToCart(@PathVariable Long buyerId, @PathVariable Long productId) {
+    public CartItemDTO addToCart(@PathVariable Long buyerId, @PathVariable Long productId) {
         Optional<User> buyer = userService.getUserById(buyerId);
-        Optional<Product> product = productService.getAllProducts().stream()
-                .filter(p -> p.getId().equals(productId))
-                .findFirst();
+        Optional<Product> product = productService.getProductById(productId); // FIXED
 
         if (buyer.isEmpty() || product.isEmpty()) return null;
 
-        Cart cart = cartService.getCartByBuyer(buyer.get()).orElseGet(() -> {
-            Cart newCart = new Cart();
-            newCart.setBuyer(buyer.get());
-            return cartService.saveCart(newCart);
-        });
-
-        Optional<CartItem> existing = cartItemService.getItemByCartAndProduct(cart, product.get());
-        if (existing.isPresent()) {
-            CartItem item = existing.get();
-            item.setQuantity(item.getQuantity() + 1);
-            return cartItemService.saveCartItem(item);
-        } else {
-            CartItem newItem = new CartItem();
-            newItem.setCart(cart);
-            newItem.setProduct(product.get());
-            newItem.setQuantity(1);
-            return cartItemService.saveCartItem(newItem);
-        }
+        return cartService.addProductToCart(buyer.get(), product.get());
     }
 
-    // Remove product from cart (or decrement quantity)
+
     @PostMapping("/{buyerId}/remove/{productId}")
     public void removeFromCart(@PathVariable Long buyerId, @PathVariable Long productId) {
         Optional<User> buyer = userService.getUserById(buyerId);
-        Optional<Product> product = productService.getAllProducts().stream()
-                .filter(p -> p.getId().equals(productId))
-                .findFirst();
+        Optional<Product> product = productService.getProductById(productId); // FIXED
 
         if (buyer.isEmpty() || product.isEmpty()) return;
 
-        cartService.getCartByBuyer(buyer.get()).ifPresent(cart -> {
-            cartItemService.getItemByCartAndProduct(cart, product.get()).ifPresent(item -> {
-                if (item.getQuantity() > 1) {
-                    item.setQuantity(item.getQuantity() - 1);
-                    cartItemService.saveCartItem(item);
-                } else {
-                    cartItemService.deleteCartItem(item.getId());
-                }
-            });
-        });
+        cartService.removeProductFromCart(buyer.get(), product.get());
     }
+
 }
