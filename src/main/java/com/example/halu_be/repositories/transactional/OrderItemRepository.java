@@ -8,5 +8,5 @@ import com.example.halu_be.models.CartItem;
 import com.example.halu_be.models.transactional.OrderItem;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
-    List<CartItem> findByCartId(Long cartId);
+    // List<CartItem> findByCartId(Long cartId);
 }
