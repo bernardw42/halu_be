@@ -17,19 +17,34 @@ public class CartItemService {
     private final CartItemRepository cartItemRepository;
 
     public List<CartItem> getItemsByCart(Cart cart) {
-        return cartItemRepository.findByCart(cart);
+        try {
+            return cartItemRepository.findByCart(cart);
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving cart items for cart ID " + cart.getId(), e);
+        }
     }
 
-    public Optional<CartItem> getItemByCartAndProduct(Cart cart, Product product) { // ✅ FIXED
-        return cartItemRepository.findByCartAndProduct(cart, product);
+    public Optional<CartItem> getItemByCartAndProduct(Cart cart, Product product) {
+        try {
+            return cartItemRepository.findByCartAndProduct(cart, product);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching item for cart ID " + cart.getId() + " and product ID " + product.getId(), e);
+        }
     }
-
 
     public CartItem saveCartItem(CartItem cartItem) {
-        return cartItemRepository.save(cartItem);
+        try {
+            return cartItemRepository.save(cartItem);
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving cart item (product ID " + cartItem.getProduct().getId() + ")", e);
+        }
     }
 
     public void deleteCartItem(Long id) {
-        cartItemRepository.deleteById(id);
+        try {
+            cartItemRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new RuntimeException("Error deleting cart item with ID " + id, e);
+        }
     }
 }

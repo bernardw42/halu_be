@@ -26,9 +26,10 @@ public class ProductController {
      * 🔹 Get all products from all sellers
      */
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public List<ProductDTO> getAllProducts() {
+        return productService.getAllProductDTOs();
     }
+
 
     /**
      * 🔹 Get all products by specific seller (no owner info)
@@ -107,6 +108,7 @@ public class ProductController {
         product.setPrice(updatedProduct.getPrice());
         product.setDescription(updatedProduct.getDescription());
         product.setImageUrl(updatedProduct.getImageUrl());
+        product.setQuantity(updatedProduct.getQuantity());
 
         Product saved = productService.saveProduct(product);
         return ResponseEntity.ok(saved);

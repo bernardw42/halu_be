@@ -35,4 +35,6 @@ public class Product {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private Integer quantity;
 }
