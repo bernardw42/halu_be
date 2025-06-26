@@ -43,7 +43,7 @@ USE legacy_bank;
 
 CREATE TABLE legacy_customers (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    username VARCHAR(100) NOT NULL,
     national_id VARCHAR(20) NOT NULL UNIQUE,
     registered_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

@@ -32,4 +32,7 @@ public class User {
     public enum Role {
         BUYER, SELLER
     }
+
+    @Column(name = "national_id", unique = true)
+    private String nationalId;
 }

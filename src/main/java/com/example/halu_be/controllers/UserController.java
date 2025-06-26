@@ -78,4 +78,11 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully.");
     }
+
+    @GetMapping("/by-national-id/{nationalId}")
+    public ResponseEntity<User> getUserByNationalId(@PathVariable String nationalId) {
+        Optional<User> user = userService.getUserByNationalId(nationalId);
+        return user.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
+    }
 }

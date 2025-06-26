@@ -17,32 +17,32 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableJpaRepositories(
     basePackages = "com.example.halu_be.repositories.secondary",
-    entityManagerFactoryRef = "secondEntityManagerFactory",
-    transactionManagerRef = "secondTransactionManager"
+    entityManagerFactoryRef = "legacyEntityManagerFactory",
+    transactionManagerRef = "legacyTransactionManager"
 )
 public class LegacyDataConfig {
 
-    @Bean(name = "secondDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.second")
-    public DataSource secondDataSource() {
+    @Bean(name = "legacyDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.legacy")
+    public DataSource legacyDataSource() {
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = "secondEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean secondEntityManagerFactory(
+    @Bean(name = "legacyEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean legacyEntityManagerFactory(
         EntityManagerFactoryBuilder builder,
-        @Qualifier("secondDataSource") DataSource dataSource
+        @Qualifier("legacyDataSource") DataSource dataSource
     ) {
         return builder
             .dataSource(dataSource)
             .packages("com.example.halu_be.models.secondary")
-            .persistenceUnit("second")
+            .persistenceUnit("legacy")
             .build();
     }
 
-    @Bean(name = "secondTransactionManager")
-    public PlatformTransactionManager secondTransactionManager(
-        @Qualifier("secondEntityManagerFactory") EntityManagerFactory emf
+    @Bean(name = "legacyTransactionManager")
+    public PlatformTransactionManager legacyTransactionManager(
+        @Qualifier("legacyEntityManagerFactory") EntityManagerFactory emf
     ) {
         return new JpaTransactionManager(emf);
     }
