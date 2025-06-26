@@ -66,12 +66,23 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 		</dependency>
-		<!--Soap Dependecy-->
+		<!--Soap Dependecy inside to outside-->
 		<dependency>
 		<groupId>com.sun.xml.ws</groupId>
 			<artifactId>jaxws-rt</artifactId>
 			<version>2.3.3</version>
 		</dependency>
+		<!--Soap Depndecy Outisde to Inside-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web-services</artifactId>
+		</dependency>
+		<dependency>
+		<groupId>wsdl4j</groupId>
+			<artifactId>wsdl4j</artifactId>
+			<version>1.6.3</version>
+		</dependency>
+
 
 	</dependencies>
 
