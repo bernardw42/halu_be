@@ -24,30 +24,52 @@ cd <your-project-folder>
 
 ## 3. Configure Database
 
-1. **Create a new database** in MySQL (or your SQL server):
+You will need **two databases**:
 
-   ```sql
-   CREATE DATABASE halu_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
+- `halu_db` (main app database)
+- `legacy_bank` (legacy customer database)
 
-2. **Update your Spring Boot `application.properties` or `application.yml`** with your database credentials:
+### 3.1 Create the main app database
 
-   ```
-   # src/main/resources/application.properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/halu_db
-   spring.datasource.username=your_db_user
-   spring.datasource.password=your_db_password
-   spring.jpa.hibernate.ddl-auto=update
-   spring.jpa.show-sql=true
-   spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
-   ```
+```sql
+CREATE DATABASE halu_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 3.2 Create the legacy bank database
+
+```sql
+CREATE DATABASE legacy_bank;
+USE legacy_bank;
+
+CREATE TABLE legacy_customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    national_id VARCHAR(20) NOT NULL UNIQUE,
+    registered_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO legacy_customers (name, national_id)
+VALUES ('John Doe', '1234567890'),
+       ('Jane Smith', '9876543210');
+```
+
+### 3.3 Update your Spring Boot `application.properties` or `application.yml` with your database credentials
+
+```
+# src/main/resources/application.properties
+spring.datasource.url=jdbc:mysql://localhost:3306/halu_db
+spring.datasource.username=your_db_user
+spring.datasource.password=your_db_password
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+```
 
 ---
 
 ## 4. Create Database Tables
 
-You can use the following SQL to create the required tables.  
-**Note:** Remove the extra `;` in the `products` table and add a missing parenthesis in `cart_items` table.
+You can use the following SQL to create the required tables for the main app database (`halu_db`):
 
 ```sql
 CREATE TABLE users (
@@ -57,6 +79,7 @@ CREATE TABLE users (
     role ENUM('BUYER', 'SELLER') NOT NULL,
     profile_image_url VARCHAR(500) DEFAULT 'https://yourdomain.com/default-profile.png',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    national_id VARCHAR(20) UNIQUE AFTER username;
 );
 
 CREATE TABLE products (
@@ -150,7 +173,7 @@ The backend will start on the port specified in your `application.properties` (d
 
 ## 7. Notes
 
-- Make sure your database is running before starting the backend.
+- Make sure your databases are running before starting the backend.
 - If you use `spring.jpa.hibernate.ddl-auto=update`, Hibernate will auto-create/update tables, but for production use, prefer manual schema management.
 - Adjust CORS settings in your Spring Boot config if you access the backend from a different frontend domain.
 
