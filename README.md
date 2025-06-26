@@ -45,7 +45,7 @@ CREATE TABLE legacy_customers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) NOT NULL,
     national_id VARCHAR(20) NOT NULL UNIQUE,
-    registered_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    email VARCHAR(100) NOT NULL,
 );
 
 INSERT INTO legacy_customers (name, national_id)
