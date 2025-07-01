@@ -1,8 +1,10 @@
 package com.example.halu_be.services.auth;
 
+import com.example.halu_be.dtos.auth.AuthResponse;
 import com.example.halu_be.dtos.auth.LoginRequest;
 import com.example.halu_be.dtos.auth.RegisterRequest;
 import com.example.halu_be.models.User;
+import com.example.halu_be.models.auth.RefreshToken;
 import com.example.halu_be.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final com.example.halu_be.config.auth.JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     public void register(RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
@@ -35,7 +38,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public String login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -43,6 +46,15 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        return jwtProvider.generateToken(user);
+        String jwt = jwtProvider.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+        return new AuthResponse(
+                jwt,
+                refreshToken.getToken(),
+                user.getId(),
+                user.getRole().name()
+        );
     }
+
 }

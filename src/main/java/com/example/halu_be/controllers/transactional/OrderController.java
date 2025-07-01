@@ -8,6 +8,7 @@ import com.example.halu_be.services.transactional.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -25,9 +26,11 @@ public class OrderController {
     private final UserService userService;
 
     @PostMapping("/{orderId}/pay")
-    public ResponseEntity<String> confirmPayment(@PathVariable Long orderId) {
+    public ResponseEntity<String> confirmPayment(@PathVariable Long orderId, Authentication auth) {
+        User buyer = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Buyer not found"));
         try {
-            String result = orderService.confirmPayment(orderId);
+            String result = orderService.confirmPayment(orderId, buyer);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -35,9 +38,11 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/ship")
-    public ResponseEntity<String> confirmShipment(@PathVariable Long orderId) {
+    public ResponseEntity<String> confirmShipment(@PathVariable Long orderId, Authentication auth) {
+        User seller = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Seller not found"));
         try {
-            String result = orderService.confirmShipment(orderId);
+            String result = orderService.confirmShipment(orderId, seller);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -45,9 +50,11 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<String> cancelOrder(@PathVariable Long orderId) {
+    public ResponseEntity<String> cancelOrder(@PathVariable Long orderId, Authentication auth) {
+        User user = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
         try {
-            String result = orderService.cancelOrder(orderId);
+            String result = orderService.cancelOrder(orderId, user);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -83,18 +90,19 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/buyer/{buyerId}")
-    public ResponseEntity<?> getOrdersByBuyer(@PathVariable Long buyerId) {
-        return userService.getUserById(buyerId)
-                .map(buyer -> ResponseEntity.ok(orderService.getOrdersByBuyer(buyer)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(java.util.Collections.emptyList()));
+    @GetMapping("/buyer")
+    public ResponseEntity<?> getOrdersByBuyer(Authentication auth) {
+        User buyer = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Buyer not found"));
+        List<OrderSummaryDTO> orders = orderService.getOrdersByBuyer(buyer);
+        return ResponseEntity.ok(orders);
     }
 
-    @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<?> getOrdersBySeller(@PathVariable Long sellerId) {
-        return userService.getUserById(sellerId)
-                .map(seller -> ResponseEntity.ok(orderService.getOrdersBySeller(seller)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(java.util.Collections.emptyList()));
+    @GetMapping("/seller")
+    public ResponseEntity<?> getOrdersBySeller(Authentication auth) {
+        User seller = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Seller not found"));
+        List<OrderSummaryDTO> orders = orderService.getOrdersBySeller(seller);
+        return ResponseEntity.ok(orders);
     }
-
 }

@@ -40,20 +40,22 @@ public class ProductService {
         return productRepository.findByIdAndOwnerId(productId, ownerId);
     }
 
-    // cari yang transactional
-    // insert,del,upd, kalo salah satu gagal rollback
-    @Transactional
+    /**
+     * ✅ This method uses the **primary** transaction manager explicitly.
+     */
+    @Transactional("transactionManager")
     public Product saveProduct(Product product) {
         validateProductFields(product);
 
         try {
             return productRepository.save(product);
         } catch (Exception e) {
-            e. printStackTrace(); //lngsng console
+            e.printStackTrace(); // Console debug
             throw new RuntimeException("Failed to save product: " + e.getMessage(), e);
         }
     }
 
+    @Transactional("transactionManager")
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
             throw new EntityNotFoundException("Cannot delete. Product does not exist.");

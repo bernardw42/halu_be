@@ -4,7 +4,9 @@ import com.example.halu_be.dtos.CheckoutResponseDTO;
 import com.example.halu_be.models.*;
 import com.example.halu_be.models.transactional.Order;
 import com.example.halu_be.models.transactional.OrderItem;
-import com.example.halu_be.repositories.*;
+import com.example.halu_be.repositories.CartItemRepository;
+import com.example.halu_be.repositories.CartRepository;
+import com.example.halu_be.repositories.ProductRepository;
 import com.example.halu_be.repositories.transactional.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,15 +26,10 @@ public class CheckoutService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
-    private final UserRepository userRepository;
     private final OrderRepository orderRepository;
 
-    // ✅ POST: Checkout from cart
-    @Transactional
-    public CheckoutResponseDTO checkout(Long buyerId) {
-        User buyer = userRepository.findById(buyerId)
-                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
-
+    @Transactional("transactionManager")
+    public CheckoutResponseDTO checkout(User buyer) {
         Cart cart = cartRepository.findByBuyer(buyer)
                 .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
 
@@ -45,7 +42,7 @@ public class CheckoutService {
         order.setBuyer(buyer);
         order.setStatus("PENDING");
         order.setCreatedAt(Timestamp.from(Instant.now()));
-        order.setExpiresAt(Timestamp.from(Instant.now().plusSeconds(86400))); // 24h to pay
+        order.setExpiresAt(Timestamp.from(Instant.now().plusSeconds(600))); // 10 mins
 
         List<OrderItem> orderItems = new ArrayList<>();
         List<CheckoutResponseDTO.ItemSummary> itemSummaries = new ArrayList<>();
@@ -53,7 +50,6 @@ public class CheckoutService {
 
         for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
-
             if (product.getQuantity() < cartItem.getQuantity()) {
                 throw new IllegalStateException("Insufficient stock for: " + product.getTitle());
             }
@@ -92,10 +88,14 @@ public class CheckoutService {
         );
     }
 
-    // ✅ GET: Retrieve existing order by ID for display in payment screen
-    public CheckoutResponseDTO getCheckoutDetails(Long orderId) {
+    @Transactional("transactionManager")
+    public CheckoutResponseDTO getCheckoutDetails(Long orderId, User buyer) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        if (!order.getBuyer().getId().equals(buyer.getId())) {
+            throw new IllegalStateException("Unauthorized: This is not your order.");
+        }
 
         List<CheckoutResponseDTO.ItemSummary> itemSummaries = order.getItems().stream()
                 .map(item -> new CheckoutResponseDTO.ItemSummary(
@@ -116,4 +116,5 @@ public class CheckoutService {
                 Math.max(0, secondsRemaining)
         );
     }
+
 }

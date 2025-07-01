@@ -1,34 +1,48 @@
 package com.example.halu_be.controllers.transactional;
 
 import com.example.halu_be.dtos.CheckoutResponseDTO;
+import com.example.halu_be.models.User;
+import com.example.halu_be.services.UserService;
 import com.example.halu_be.services.transactional.CheckoutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/checkout")
+@RequestMapping("/api/buyer/checkout")
 @RequiredArgsConstructor
 public class CheckoutController {
 
     private final CheckoutService checkoutService;
+    private final UserService userService;
 
-    // ✅ POST /api/checkout/{buyerId} → Create checkout
-    @PostMapping("/{buyerId}")
-    public ResponseEntity<?> checkout(@PathVariable Long buyerId) {
+    /**
+     * ✅ POST → Create checkout for authenticated buyer
+     */
+    @PostMapping
+    public ResponseEntity<?> checkout(Authentication auth) {
         try {
-            CheckoutResponseDTO response = checkoutService.checkout(buyerId);
+            User buyer = userService.getUserByUsername(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("Buyer not found"));
+
+            CheckoutResponseDTO response = checkoutService.checkout(buyer);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // ✅ GET /api/checkout/{orderId} → Show products and timer before paying
+    /**
+     * ✅ GET → Get checkout details for authenticated buyer
+     */
     @GetMapping("/{orderId}")
-    public ResponseEntity<?> getCheckoutDetails(@PathVariable Long orderId) {
+    public ResponseEntity<?> getCheckoutDetails(@PathVariable Long orderId, Authentication auth) {
         try {
-            CheckoutResponseDTO response = checkoutService.getCheckoutDetails(orderId);
+            User buyer = userService.getUserByUsername(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("Buyer not found"));
+
+            CheckoutResponseDTO response = checkoutService.getCheckoutDetails(orderId, buyer);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

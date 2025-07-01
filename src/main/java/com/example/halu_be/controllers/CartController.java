@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,54 +24,54 @@ public class CartController {
     private final UserService userService;
     private final ProductService productService;
 
-    private User getCurrentUser(Authentication auth) {
-        return userService.getUserByUsername(auth.getName()).orElseThrow();
+    // 🔒 Resolved from JWT
+    private User getCurrentBuyer(Authentication auth) {
+        return userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Buyer not found"));
     }
 
     @GetMapping
-    public List<CartItemDTO> getCartItems(Authentication auth) {
-        User buyer = getCurrentUser(auth);
-        return cartService.getCartItemDTOsByBuyer(buyer);
+    public ResponseEntity<List<CartItemDTO>> getCartItems(Authentication auth) {
+        User buyer = getCurrentBuyer(auth);
+        List<CartItemDTO> items = cartService.getCartItemDTOsByBuyer(buyer);
+        return ResponseEntity.ok(items);
     }
 
     @PostMapping("/add/{productId}")
     public ResponseEntity<?> addToCart(Authentication auth, @PathVariable Long productId) {
-        User buyer = getCurrentUser(auth);
-        Optional<Product> product = productService.getProductById(productId);
+        User buyer = getCurrentBuyer(auth);
 
-        if (product.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Product not found.");
+        Optional<Product> productOpt = productService.getProductById(productId);
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
         }
 
         try {
-            CartItemDTO item = cartService.addProductToCart(buyer, product.get());
-            return ResponseEntity.ok(item);
+            CartItemDTO dto = cartService.addProductToCart(buyer, productOpt.get());
+            return ResponseEntity.ok(dto);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Something went wrong. Try again.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not add to cart.");
         }
     }
 
     @PostMapping("/remove/{productId}")
     public ResponseEntity<?> removeFromCart(Authentication auth, @PathVariable Long productId) {
-        User buyer = getCurrentUser(auth);
-        Optional<Product> product = productService.getProductById(productId);
+        User buyer = getCurrentBuyer(auth);
 
-        if (product.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Product not found.");
+        Optional<Product> productOpt = productService.getProductById(productId);
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
         }
 
-        cartService.removeProductFromCart(buyer, product.get());
-        return ResponseEntity.ok("Item removed from cart.");
+        cartService.removeProductFromCart(buyer, productOpt.get());
+        return ResponseEntity.ok("Product removed from cart.");
     }
 
     @PostMapping("/clear")
     public ResponseEntity<?> clearCart(Authentication auth) {
-        User buyer = getCurrentUser(auth);
+        User buyer = getCurrentBuyer(auth);
         cartService.clearCart(buyer);
         return ResponseEntity.ok("Cart cleared successfully.");
     }
