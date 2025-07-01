@@ -1,5 +1,5 @@
 package com.example.halu_be.soapclient;
-
+//inside to outside MIDDLEWARE
 public class Currency {
     private String sISOCode;
     private String sName;

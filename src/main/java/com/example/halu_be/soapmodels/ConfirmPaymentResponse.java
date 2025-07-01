@@ -1,5 +1,5 @@
 package com.example.halu_be.soapmodels;
-
+//outside to inside MIDDLEWARE
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;

@@ -49,8 +49,8 @@ CREATE TABLE legacy_customers (
 );
 
 INSERT INTO legacy_customers (name, national_id)
-VALUES ('John Doe', '1234567890'),
-       ('Jane Smith', '9876543210');
+VALUES ('buyer_bob', '1111111'),
+       ('seller_anna', '1111112');
 ```
 
 ### 3.3 Update your Spring Boot `application.properties` or `application.yml` with your database credentials

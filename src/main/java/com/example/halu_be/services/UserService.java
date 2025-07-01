@@ -14,28 +14,30 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(Long id) {
+    public Optional<User> getUserById(Long id) { // ✅ FIX: use Long not String
         return userRepository.findById(id);
     }
 
-    public User saveUser(User user) {
-            if (user.getProfileImageUrl() == null || user.getProfileImageUrl().isBlank()) {
-                user.setProfileImageUrl("https://ui-avatars.com/api/?name=User&background=random");
-            }
-        return userRepository.save(user);
+    public Optional<User> getUserByUsername(String username) { // ✅ NEW: for JWT
+        return userRepository.findByUsername(username);
     }
 
-    public void deleteUser(Long id) {
-    userRepository.deleteById(id);
-    
-    }
     public Optional<User> getUserByNationalId(String nationalId) {
         return userRepository.findByNationalId(nationalId);
     }
 
+    public User saveUser(User user) {
+        if (user.getProfileImageUrl() == null || user.getProfileImageUrl().isBlank()) {
+            user.setProfileImageUrl("https://ui-avatars.com/api/?name=User&background=random");
+        }
+        return userRepository.save(user);
+    }
+
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
+    }
 }

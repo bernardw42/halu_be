@@ -12,7 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 
 @EnableWs
 @Configuration
-public class WebServiceConfig {
+public class MiddlewareOutsideInsideConfig {
 
     @Bean
     public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(org.springframework.context.ApplicationContext context) {

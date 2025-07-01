@@ -1,5 +1,5 @@
-package com.example.halu_be.controllers;
-
+package com.example.halu_be.controllers.middleware;
+//inside to outside MIDDLEWARE
 import com.example.halu_be.services.middleware.CurrencySoapClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

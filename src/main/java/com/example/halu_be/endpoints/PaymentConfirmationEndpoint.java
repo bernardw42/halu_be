@@ -1,5 +1,5 @@
 package com.example.halu_be.endpoints;
-
+//outside to inside MIDDLEWARE
 import com.example.halu_be.soapmodels.ConfirmPaymentRequest;
 import com.example.halu_be.soapmodels.ConfirmPaymentResponse;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
