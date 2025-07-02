@@ -6,10 +6,9 @@ import com.example.halu_be.models.User;
 import com.example.halu_be.services.ProductService;
 import com.example.halu_be.services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j; // ✅ Add logging if needed for controller
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,56 +17,69 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
+@Slf4j // ✅ Enables log.info / log.error if needed here
 public class ProductController {
 
     private final ProductService productService;
     private final UserService userService;
 
     /**
-     * 🔹 Get all products from all sellers
+     * ✅ Public: Get ALL products from ALL sellers.
+     * 👉 No try/catch here — relies on Service + ExceptionHandler for errors.
      */
     @GetMapping
-    public List<ProductDTO> getAllProducts() {
-        return productService.getAllProductDTOs();
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+        List<ProductDTO> dtos = productService.getAllProductDTOs();
+        return ResponseEntity.ok(dtos);
     }
 
     /**
-     * 🔹 Get all products by specific seller (public)
+     * ✅ Public: Get ALL products by specific seller ID.
+     * 👉 Example of simple input validation: checking seller exists.
      */
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<?> getProductsBySeller(@PathVariable Long sellerId) {
-        Optional<User> seller = userService.getUserById(sellerId);
-        if (seller.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Seller not found.");
+        Optional<User> sellerOpt = userService.getUserById(sellerId);
+
+        if (sellerOpt.isEmpty()) {
+            log.warn("Seller with ID {} not found", sellerId); // ✅ Optional: log input problem
+            return ResponseEntity.notFound().build();
         }
-        List<ProductDTO> productDTOs = productService.getProductsDTOByOwner(seller.get());
-        return ResponseEntity.ok(productDTOs);
+
+        List<ProductDTO> dtos = productService.getProductsDTOByOwner(sellerOpt.get());
+        return ResponseEntity.ok(dtos);
     }
 
     /**
-     * 🔹 Get a single product by ID
+     * ✅ Public: Get a single product by its ID (all sellers).
      */
     @GetMapping("/{productId}")
     public ResponseEntity<?> getProductById(@PathVariable Long productId) {
-        Optional<Product> product = productService.getProductById(productId);
-        if (product.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        Optional<Product> productOpt = productService.getProductById(productId);
+
+        if (productOpt.isEmpty()) {
+            log.warn("Product with ID {} not found", productId);
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(product.get());
+
+        return ResponseEntity.ok(productOpt.get());
     }
 
     /**
-     * 🔹 Get a specific product of a specific seller (public)
+     * ✅ Public: Get a specific product by a specific seller.
      */
     @GetMapping("/{sellerId}/{productId}")
     public ResponseEntity<?> getProductBySellerAndProductId(
             @PathVariable Long sellerId,
             @PathVariable Long productId) {
-        Optional<ProductDTO> productDTO = productService.getProductDTOBySellerAndProductId(sellerId, productId);
-        if (productDTO.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Product not found or does not belong to this seller.");
+
+        Optional<ProductDTO> dtoOpt = productService.getProductDTOBySellerAndProductId(sellerId, productId);
+
+        if (dtoOpt.isEmpty()) {
+            log.warn("Product with ID {} not found for seller ID {}", productId, sellerId);
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(productDTO.get());
+
+        return ResponseEntity.ok(dtoOpt.get());
     }
 }

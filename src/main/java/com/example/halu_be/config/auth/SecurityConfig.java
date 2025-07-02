@@ -34,6 +34,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll()
+                .requestMatchers("/api/legacy/**").permitAll() // <-- allow all legacy endpoints
                 .requestMatchers("/api/buyer/**").hasAuthority("BUYER")
                 .requestMatchers("/api/seller/**").hasAuthority("SELLER")
                 .anyRequest().authenticated()
