@@ -5,6 +5,8 @@ import com.example.halu_be.models.CartItem;
 import com.example.halu_be.models.Product;
 import com.example.halu_be.repositories.CartItemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j // ✅ Add logging support
 public class CartItemService {
 
     private final CartItemRepository cartItemRepository;
@@ -20,7 +23,8 @@ public class CartItemService {
         try {
             return cartItemRepository.findByCart(cart);
         } catch (Exception e) {
-            throw new RuntimeException("Error retrieving cart items for cart ID " + cart.getId(), e);
+            log.error("Failed to get items for cart ID {}: {}", cart.getId(), e.getMessage());
+            throw new RuntimeException("Could not retrieve cart items.", e);
         }
     }
 
@@ -28,7 +32,8 @@ public class CartItemService {
         try {
             return cartItemRepository.findByCartAndProduct(cart, product);
         } catch (Exception e) {
-            throw new RuntimeException("Error fetching item for cart ID " + cart.getId() + " and product ID " + product.getId(), e);
+            log.error("Failed to get cart item for cart ID {} and product ID {}: {}", cart.getId(), product.getId(), e.getMessage());
+            throw new RuntimeException("Could not get cart item.", e);
         }
     }
 
@@ -36,7 +41,8 @@ public class CartItemService {
         try {
             return cartItemRepository.save(cartItem);
         } catch (Exception e) {
-            throw new RuntimeException("Error saving cart item (product ID " + cartItem.getProduct().getId() + ")", e);
+            log.error("Failed to save cart item for product ID {}: {}", cartItem.getProduct().getId(), e.getMessage());
+            throw new RuntimeException("Could not save cart item.", e);
         }
     }
 
@@ -44,7 +50,8 @@ public class CartItemService {
         try {
             cartItemRepository.deleteById(id);
         } catch (Exception e) {
-            throw new RuntimeException("Error deleting cart item with ID " + id, e);
+            log.error("Failed to delete cart item with ID {}: {}", id, e.getMessage());
+            throw new RuntimeException("Could not delete cart item.", e);
         }
     }
 }

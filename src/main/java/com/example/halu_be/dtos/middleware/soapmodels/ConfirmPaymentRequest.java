@@ -1,4 +1,4 @@
-package com.example.halu_be.soapmodels;
+package com.example.halu_be.dtos.middleware.soapmodels;
 //outside to inside MIDDLEWARE
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;

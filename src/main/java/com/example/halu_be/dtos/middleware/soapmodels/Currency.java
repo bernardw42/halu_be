@@ -1,4 +1,4 @@
-package com.example.halu_be.soapclient;
+package com.example.halu_be.dtos.middleware.soapmodels;
 //inside to outside MIDDLEWARE
 public class Currency {
     private String sISOCode;

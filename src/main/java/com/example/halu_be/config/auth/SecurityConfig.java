@@ -34,11 +34,15 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll()
-                .requestMatchers("/api/legacy/**").permitAll() // <-- allow all legacy endpoints
+                .requestMatchers("/api/legacy/**").permitAll()
+                .requestMatchers("/api/currency/**").permitAll() // ✅ <-- allow your SOAP client REST test
                 .requestMatchers("/api/buyer/**").hasAuthority("BUYER")
                 .requestMatchers("/api/seller/**").hasAuthority("SELLER")
+                .requestMatchers("/ws/**").permitAll()
+
                 .anyRequest().authenticated()
             )
+
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );

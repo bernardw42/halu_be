@@ -1,11 +1,11 @@
-package com.example.halu_be.endpoints;
-//outside to inside MIDDLEWARE
-import com.example.halu_be.soapmodels.ConfirmPaymentRequest;
-import com.example.halu_be.soapmodels.ConfirmPaymentResponse;
+package com.example.halu_be.controllers.middleware.endpoints;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
+//outside to inside MIDDLEWARE
+import com.example.halu_be.dtos.middleware.soapmodels.ConfirmPaymentRequest;
+import com.example.halu_be.dtos.middleware.soapmodels.ConfirmPaymentResponse;
 
 @Endpoint
 public class PaymentConfirmationEndpoint {
